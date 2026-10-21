@@ -1,0 +1,23 @@
+.env
+.idea/
+.pytest_cache/
+.ruff_cache/
+.venv/
+.vscode/
+__pycache__/
+*.py[cod]
+*.sqlite3
+.coverage
+htmlcov/
+
+# Local AI-agent instructions and state
+AGENTS.md
+.agents/
+.codex/
+.cursor/
+.cursorrules
+docs/
+README.md
+pyproject.toml
+tests/
+.gitattributes
