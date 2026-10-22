@@ -1,4 +1,5 @@
 .env
+imports/
 .idea/
 .pytest_cache/
 .ruff_cache/
@@ -17,7 +18,4 @@ AGENTS.md
 .cursor/
 .cursorrules
 docs/
-README.md
-pyproject.toml
-tests/
 .gitattributes

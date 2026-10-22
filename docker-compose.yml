@@ -14,8 +14,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-    ports:
-      - "${POSTGRES_HOST_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -27,9 +25,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-    ports:
-      - "${REDIS_HOST_PORT:-6379}:6379"
-
   web:
     build:
       context: .
@@ -39,7 +34,7 @@ services:
     init: true
     environment:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-unsafe-local-development-key}
-      DJANGO_DEBUG: ${DJANGO_DEBUG:-true}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-false}
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
       POSTGRES_DB: ${POSTGRES_DB:-purchase_requests}
       POSTGRES_USER: ${POSTGRES_USER:-purchase_requests}
@@ -48,6 +43,13 @@ services:
       POSTGRES_PORT: "5432"
       CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
       CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/1}
+      IMPORT_STORAGE_ROOT: /app/imports
+      IMPORT_BATCH_SIZE: ${IMPORT_BATCH_SIZE:-500}
+      IMPORT_LEASE_TIMEOUT_SECONDS: ${IMPORT_LEASE_TIMEOUT_SECONDS:-300}
+      IMPORT_MAX_FILE_SIZE_BYTES: ${IMPORT_MAX_FILE_SIZE_BYTES:-104857600}
+      XLSX_MAX_ARCHIVE_ENTRIES: ${XLSX_MAX_ARCHIVE_ENTRIES:-10000}
+      XLSX_MAX_UNCOMPRESSED_SIZE_BYTES: ${XLSX_MAX_UNCOMPRESSED_SIZE_BYTES:-1073741824}
+      XLSX_MAX_PART_SIZE_BYTES: ${XLSX_MAX_PART_SIZE_BYTES:-536870912}
     depends_on:
       db:
         condition: service_healthy
@@ -57,6 +59,7 @@ services:
       - "8000:8000"
     volumes:
       - .:/app
+      - import_files:/app/imports
 
   worker:
     build:
@@ -67,7 +70,7 @@ services:
     init: true
     environment:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-unsafe-local-development-key}
-      DJANGO_DEBUG: ${DJANGO_DEBUG:-true}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-false}
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
       POSTGRES_DB: ${POSTGRES_DB:-purchase_requests}
       POSTGRES_USER: ${POSTGRES_USER:-purchase_requests}
@@ -76,6 +79,13 @@ services:
       POSTGRES_PORT: "5432"
       CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
       CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/1}
+      IMPORT_STORAGE_ROOT: /app/imports
+      IMPORT_BATCH_SIZE: ${IMPORT_BATCH_SIZE:-500}
+      IMPORT_LEASE_TIMEOUT_SECONDS: ${IMPORT_LEASE_TIMEOUT_SECONDS:-300}
+      IMPORT_MAX_FILE_SIZE_BYTES: ${IMPORT_MAX_FILE_SIZE_BYTES:-104857600}
+      XLSX_MAX_ARCHIVE_ENTRIES: ${XLSX_MAX_ARCHIVE_ENTRIES:-10000}
+      XLSX_MAX_UNCOMPRESSED_SIZE_BYTES: ${XLSX_MAX_UNCOMPRESSED_SIZE_BYTES:-1073741824}
+      XLSX_MAX_PART_SIZE_BYTES: ${XLSX_MAX_PART_SIZE_BYTES:-536870912}
     depends_on:
       db:
         condition: service_healthy
@@ -83,6 +93,8 @@ services:
         condition: service_healthy
     volumes:
       - .:/app
+      - import_files:/app/imports
 
 volumes:
   postgres_data:
+  import_files:
